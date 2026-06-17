@@ -1,0 +1,118 @@
+Microsoft Windows [Version 10.0.19045.6456]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\pratyush.pradhan>cd C:\
+
+C:\>ren dotnet-auth-learning dotnet-auth-learning-lab
+
+C:\>cd dotnet-auth-learning-lab
+
+C:\dotnet-auth-learning-lab>git status
+fatal: not a git repository (or any of the parent directories): .git
+
+C:\dotnet-auth-learning-lab>git init
+Initialized empty Git repository in C:/dotnet-auth-learning-lab/.git/
+
+C:\dotnet-auth-learning-lab>git switch -c demo-01-mvc-session-cookie-dapper-sp
+Switched to a new branch 'demo-01-mvc-session-cookie-dapper-sp'
+
+C:\dotnet-auth-learning-lab>git branch
+
+C:\dotnet-auth-learning-lab>git status
+On branch demo-01-mvc-session-cookie-dapper-sp
+
+No commits yet
+
+nothing to commit (create/copy files and use "git add" to track)
+
+C:\dotnet-auth-learning-lab>mkdir databasemkdir docstype nul > database\01_create_tables.sqltype nul > database\02_seed_data.sqltype nul > database\03_stored_procedures.sqltype nul > docs\project-requirements.md
+The system cannot find the path specified.
+
+C:\dotnet-auth-learning-lab>git status
+On branch demo-01-mvc-session-cookie-dapper-sp
+
+No commits yet
+
+nothing to commit (create/copy files and use "git add" to track)
+
+C:\dotnet-auth-learning-lab>mkdir database
+
+C:\dotnet-auth-learning-lab>mkdir docs
+
+C:\dotnet-auth-learning-lab>type nul > database\01_create_tables.sql
+
+C:\dotnet-auth-learning-lab>type nul > database\02_seed_data.sql
+
+C:\dotnet-auth-learning-lab>type nul > database\03_stored_procedures.sql
+
+C:\dotnet-auth-learning-lab>type nul > docs\project-requirements.md
+
+C:\dotnet-auth-learning-lab>dir
+ Volume in drive C has no label.
+ Volume Serial Number is FACC-8367
+
+ Directory of C:\dotnet-auth-learning-lab
+
+06/17/2026  05:16 PM    <DIR>          .
+06/17/2026  05:16 PM    <DIR>          ..
+06/17/2026  05:16 PM    <DIR>          database
+06/17/2026  05:16 PM    <DIR>          docs
+               0 File(s)              0 bytes
+               4 Dir(s)  63,554,060,288 bytes free
+
+C:\dotnet-auth-learning-lab>dir database
+ Volume in drive C has no label.
+ Volume Serial Number is FACC-8367
+
+ Directory of C:\dotnet-auth-learning-lab\database
+
+06/17/2026  05:16 PM    <DIR>          .
+06/17/2026  05:16 PM    <DIR>          ..
+06/17/2026  05:16 PM                 0 01_create_tables.sql
+06/17/2026  05:16 PM                 0 02_seed_data.sql
+06/17/2026  05:16 PM                 0 03_stored_procedures.sql
+               3 File(s)              0 bytes
+               2 Dir(s)  63,553,765,376 bytes free
+
+C:\dotnet-auth-learning-lab>dir docs
+ Volume in drive C has no label.
+ Volume Serial Number is FACC-8367
+
+ Directory of C:\dotnet-auth-learning-lab\docs
+
+06/17/2026  05:16 PM    <DIR>          .
+06/17/2026  05:16 PM    <DIR>          ..
+06/17/2026  05:16 PM                 0 project-requirements.md
+               1 File(s)              0 bytes
+               2 Dir(s)  63,553,507,328 bytes free
+
+C:\dotnet-auth-learning-lab>git status
+On branch demo-01-mvc-session-cookie-dapper-sp
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        database/
+        docs/
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+C:\dotnet-auth-learning-lab>git add .
+
+C:\dotnet-auth-learning-lab>git commit -m "Add planning files for demo 01"
+[demo-01-mvc-session-cookie-dapper-sp (root-commit) d222970] Add planning files for demo 01
+ 4 files changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 database/01_create_tables.sql
+ create mode 100644 database/02_seed_data.sql
+ create mode 100644 database/03_stored_procedures.sql
+ create mode 100644 docs/project-requirements.md
+
+C:\dotnet-auth-learning-lab>git status
+On branch demo-01-mvc-session-cookie-dapper-sp
+nothing to commit, working tree clean
+
+C:\dotnet-auth-learning-lab>git branch
+* demo-01-mvc-session-cookie-dapper-sp
+
+C:\dotnet-auth-learning-lab>
