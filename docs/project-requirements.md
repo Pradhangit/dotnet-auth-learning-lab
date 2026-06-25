@@ -1,101 +1,44 @@
-# Demo 01 - .NET Core MVC + Session + Cookie + Dapper + Stored Procedure
+## Manual Dashboard Menu Rules for Demo 1
 
-## Project Type
+For Demo 1, menus will be manually created in `Views/Dashboard/Index.cshtml`.
 
-This is a .NET Core MVC project without API.
+Menu visibility will be decided using the logged-in user's `LevelNo`.
 
-## Technologies
+### Level 1 Users
 
-- .NET Core MVC
-- SQL Server
-- Dapper
-- One action-based stored procedure
-- Session
-- Cookie
-- Git and GitHub
+Level 1 users can see:
 
-## Not Included
+- Apply Leave
+- View Details / Personal Profile
 
-- No API
-- No JWT
-- No EF Core
-- No Angular
+Level 1 users cannot see:
 
-## Main Features
+- Approve Leave
+- View Users
 
-- User registration
-- Username-password login
-- User logout
-- Dashboard after login
-- Session-based authentication
-- Remember-me cookie
-- Role-based menu
+### Level 2, Level 3, and Level 4 Users
 
-## Database Tables
+Level 2, Level 3, and Level 4 users can see:
 
-1. Roles
-2. Users
-3. UserRoles
-4. Menus
-5. RoleMenus
-6. UserLoginLogs
+- Apply Leave
+- Approve Leave
+- View Users
+- View Details / Personal Profile
 
-## Stored Procedure Strategy
+### View Users Rule
 
-This project uses one action-based stored procedure for user, role, menu, and login related database operations.
+When a logged-in user clicks View Users, the system will show only employees who are directly working under that logged-in user.
 
-Main stored procedure:
+The condition will be:
 
-- sp_UserManagement
+Users.ReportingAuthorityId = LoggedInUserId
 
-## Stored Procedure Actions
+For now, higher-level users can see only their immediate lower-level users.
 
-| Action | Purpose |
-|---|---|
-| RU | Register User |
-| GUBU | Get User By Username |
-| GUBI | Get User By Id |
-| AR | Assign Role To User |
-| GR | Get User Roles |
-| GM | Get Menus By UserId |
-| ILL | Insert Login Log |
-| CU | Check Username Exists |
+Example:
 
-## Authentication Flow
+- Level 2 user can see Level 1 users directly reporting to them.
+- Level 3 user can see Level 2 users directly reporting to them.
+- Level 4 user can see Level 3 users directly reporting to them.
 
-1. User registers with full name, username, and password.
-2. Password is hashed in C# before saving.
-3. System checks whether username already exists.
-4. User is assigned default role: User.
-5. User logs in with username and password.
-6. System gets user by username using sp_UserManagement with action GUBU.
-7. System validates password hash in C#.
-8. If login is successful, user details are stored in Session.
-9. If Remember Me is checked, username is stored in Cookie.
-10. User is redirected to Dashboard.
-11. Logout clears Session and Cookie.
-
-## Session Values
-
-- UserId
-- FullName
-- Username
-- RoleName
-
-## Cookie Values
-
-- RememberedUsername
-
-## Default Roles
-
-- Admin
-- Manager
-- User
-
-## Default Menus
-
-- Dashboard
-- My Profile
-- Users
-- Reports
-- Logout
+Later, this can be enhanced with dropdown-based filtering to view Level 1 or Level 2 employees.
