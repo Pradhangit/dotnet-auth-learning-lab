@@ -1,0 +1,68 @@
+﻿@model Demo01.MvcSessionCookieDapperSp.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h2>Dashboard</h2>
+
+<p>Welcome, <strong>@Model.FullName</strong></p>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Username</th>
+        <td>@Model.Username</td>
+    </tr>
+    <tr>
+        <th>Department</th>
+        <td>@Model.DepartmentName</td>
+    </tr>
+    <tr>
+        <th>Designation</th>
+        <td>@Model.DesignationName</td>
+    </tr>
+    <tr>
+        <th>Level</th>
+        <td>@Model.LevelNo</td>
+    </tr>
+    <tr>
+        <th>Admin</th>
+        <td>@Model.IsAdmin</td>
+    </tr>
+</table>
+
+<hr />
+
+<h4>Menu</h4>
+
+<ul>
+    <li>
+        <a asp-controller="Dashboard" asp-action="Index">View Details / Personal Profile</a>
+    </li>
+
+    <li>
+        <a href="#">Apply Leave</a>
+    </li>
+
+    @if (Model.LevelNo >= 2)
+    {
+        <li>
+            <a href="#">Approve Leave</a>
+        </li>
+
+        <li>
+            <a asp-controller="Dashboard" asp-action="ViewUsers">View Users</a>
+        </li>
+    }
+
+    @if (Model.IsAdmin)
+    {
+        <li>
+            <a asp-controller="Account" asp-action="Register">Register User</a>
+        </li>
+    }
+
+    <li>
+        <a asp-controller="Account" asp-action="Logout">Logout</a>
+    </li>
+</ul>

@@ -1,0 +1,54 @@
+﻿@model List<Demo01.MvcSessionCookieDapperSp.ViewModels.ReportingUserViewModel>
+
+@{
+    ViewData["Title"] = "View Users";
+}
+
+<h2>Reporting Users</h2>
+
+<a asp-controller="Dashboard" asp-action="Index">Back to Dashboard</a>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info mt-3">
+        No users are directly reporting to you.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Department</th>
+                <th>Designation</th>
+                <th>Level</th>
+                <th>Login Time</th>
+                <th>Logout Time</th>
+                <th>Total Minutes</th>
+                <th>Net Minutes</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.FullName</td>
+                    <td>@user.Username</td>
+                    <td>@user.Email</td>
+                    <td>@user.PhoneNumber</td>
+                    <td>@user.DepartmentName</td>
+                    <td>@user.DesignationName</td>
+                    <td>@user.LevelNo</td>
+                    <td>@user.LoginTime</td>
+                    <td>@user.LogoutTime</td>
+                    <td>@user.TotalDurationMinutes</td>
+                    <td>@user.NetDurationMinutes</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

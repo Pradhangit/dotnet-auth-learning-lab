@@ -17,5 +17,6 @@
         public string DesignationName { get; set; } = string.Empty;
 
         public int LevelNo { get; set; }
+        public bool IsAdmin { get; set; }
     }
 }
