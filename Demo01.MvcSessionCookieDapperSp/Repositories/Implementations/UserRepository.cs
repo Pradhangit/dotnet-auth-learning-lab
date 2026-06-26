@@ -37,7 +37,7 @@ public class UserRepository : IUserRepository
         parameters.Add("@Username", username);
 
         var result = await connection.QueryFirstOrDefaultAsync<int>(
-            "sp_UserManagement",
+            "sp_UserManagement5361",
             parameters,
             commandType: CommandType.StoredProcedure
         );
@@ -61,7 +61,7 @@ public class UserRepository : IUserRepository
         parameters.Add("@PhoneNumber", model.PhoneNumber);
 
         var result = await connection.QueryFirstOrDefaultAsync<int>(
-            "sp_UserManagement",
+            "sp_UserManagement5361",
             parameters,
             commandType: CommandType.StoredProcedure
         );
@@ -78,7 +78,7 @@ public class UserRepository : IUserRepository
         parameters.Add("@Username", username);
 
         var user = await connection.QueryFirstOrDefaultAsync<LoggedInUserDto>(
-            "sp_UserManagement",
+            "sp_UserManagement5361",
             parameters,
             commandType: CommandType.StoredProcedure
         );
@@ -95,7 +95,7 @@ public class UserRepository : IUserRepository
         parameters.Add("@UserId", userId);
 
         var user = await connection.QueryFirstOrDefaultAsync<DashboardViewModel>(
-            "sp_UserManagement",
+            "sp_UserManagement5361",
             parameters,
             commandType: CommandType.StoredProcedure
         );
@@ -112,7 +112,7 @@ public class UserRepository : IUserRepository
         parameters.Add("@UserId", loggedInUserId);
 
         var users = await connection.QueryAsync<ReportingUserViewModel>(
-            "sp_UserManagement",
+            "sp_UserManagement5361",
             parameters,
             commandType: CommandType.StoredProcedure
         );
@@ -134,7 +134,7 @@ public class UserRepository : IUserRepository
         parameters.Add("@UserAgent", request.UserAgent);
 
         var attendanceLogId = await connection.QueryFirstOrDefaultAsync<long>(
-            "sp_UserManagement",
+            "sp_UserManagement5361",
             parameters,
             commandType: CommandType.StoredProcedure
         );
@@ -151,7 +151,7 @@ public class UserRepository : IUserRepository
         parameters.Add("@AttendanceLogId", request.AttendanceLogId);
 
         var result = await connection.QueryFirstOrDefaultAsync<int>(
-            "sp_UserManagement",
+            "sp_UserManagement5361",
             parameters,
             commandType: CommandType.StoredProcedure
         );

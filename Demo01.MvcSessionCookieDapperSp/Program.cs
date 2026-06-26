@@ -3,6 +3,10 @@ using Demo01.MvcSessionCookieDapperSp.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//var testHash = BCrypt.Net.BCrypt.HashPassword("Password@123");
+//Console.WriteLine("Generated BCrypt Hash:");
+//Console.WriteLine(testHash);
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
