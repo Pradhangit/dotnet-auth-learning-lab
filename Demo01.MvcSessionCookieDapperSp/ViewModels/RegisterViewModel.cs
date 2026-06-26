@@ -36,5 +36,6 @@ namespace Demo01.MvcSessionCookieDapperSp.ViewModels
         [DataType(DataType.Password)]
         [Compare(nameof(Password), ErrorMessage = "Password and confirm password do not match.")]
         public string ConfirmPassword { get; set; } = string.Empty;
+        public bool IsAdmin { get; set; }
     }
 }
