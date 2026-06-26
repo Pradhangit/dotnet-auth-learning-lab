@@ -1,11 +1,17 @@
-sp_UserManagementUSE DotNetAuthLearningLabDb;
+USE DotNetAuthLearningLabDb;
 GO
 
 -- =====================================================
 -- Stored Procedure: sp_UserManagement
 -- Purpose:
--- This is one action-based stored procedure used for
--- user login, user profile, team view, login log, logout log.
+-- One action-based stored procedure for:
+-- 1. Username check
+-- 2. User registration
+-- 3. Login user fetch
+-- 4. User profile fetch
+-- 5. Reporting users fetch
+-- 6. Insert login log
+-- 7. Update logout log
 -- =====================================================
 
 CREATE OR ALTER PROCEDURE sp_UserManagement
@@ -25,7 +31,6 @@ CREATE OR ALTER PROCEDURE sp_UserManagement
 
     @AttendanceLogId BIGINT = NULL,
     @LoginIpAddress NVARCHAR(50) = NULL,
-    @LogoutIpAddress NVARCHAR(50) = NULL,
     @UserAgent NVARCHAR(500) = NULL,
     @LoginStatus NVARCHAR(20) = NULL,
     @FailureReason NVARCHAR(300) = NULL
@@ -37,35 +42,44 @@ BEGIN
     -- =====================================================
     -- Action: CHECK_USERNAME
     -- Purpose: Check whether username already exists
+    -- Return: 1 if exists, 0 if not exists
     -- =====================================================
     IF (@Action = 'CHECK_USERNAME')
     BEGIN
         SELECT 
             CASE 
-                WHEN EXISTS 
+                WHEN EXISTS
                 (
-                    SELECT 1 
-                    FROM Users 
+                    SELECT 1
+                    FROM Users
                     WHERE Username = @Username
                 )
-                THEN 1 
-                ELSE 0 
+                THEN 1
+                ELSE 0
             END AS IsExists;
 
         RETURN;
-    END
+    END;
 
     -- =====================================================
     -- Action: REGISTER_USER
     -- Purpose: Register a new user
+    -- Return:
+    -- -1 = Username already exists
+    -- New UserId = Registration successful
     -- =====================================================
     IF (@Action = 'REGISTER_USER')
     BEGIN
-        IF EXISTS (SELECT 1 FROM Users WHERE Username = @Username)
+        IF EXISTS
+        (
+            SELECT 1
+            FROM Users
+            WHERE Username = @Username
+        )
         BEGIN
             SELECT -1 AS Result;
             RETURN;
-        END
+        END;
 
         INSERT INTO Users
         (
@@ -76,7 +90,9 @@ BEGIN
             Username,
             PasswordHash,
             Email,
-            PhoneNumber
+            PhoneNumber,
+            IsActive,
+            CreatedOn
         )
         VALUES
         (
@@ -87,17 +103,20 @@ BEGIN
             @Username,
             @PasswordHash,
             @Email,
-            @PhoneNumber
+            @PhoneNumber,
+            1,
+            GETDATE()
         );
 
-        SELECT SCOPE_IDENTITY() AS Result;
+        SELECT CAST(SCOPE_IDENTITY() AS INT) AS Result;
         RETURN;
-    END
+    END;
 
     -- =====================================================
     -- Action: LOGIN
-    -- Purpose: Get user by username for login
-    -- Password will be verified in C# using PasswordHash
+    -- Purpose:
+    -- Get user by username for login.
+    -- Password verification will happen in C# using BCrypt.
     -- =====================================================
     IF (@Action = 'LOGIN')
     BEGIN
@@ -110,25 +129,30 @@ BEGIN
             U.PhoneNumber,
             U.DepartmentId,
             D.DepartmentName,
+            D.DepartmentCode,
             U.DesignationId,
             DG.DesignationName,
             DG.LevelNo,
             U.ReportingAuthorityId,
             U.IsActive
         FROM Users U
-        INNER JOIN Departments D 
+        INNER JOIN Departments D
             ON U.DepartmentId = D.DepartmentId
-        INNER JOIN Designations DG 
+        INNER JOIN Designations DG
             ON U.DesignationId = DG.DesignationId
         WHERE U.Username = @Username
-          AND U.IsActive = 1;
+          AND U.IsActive = 1
+          AND D.IsActive = 1
+          AND DG.IsActive = 1;
 
         RETURN;
-    END
+    END;
 
     -- =====================================================
     -- Action: GET_USER_BY_ID
-    -- Purpose: Get logged-in user's profile details
+    -- Purpose:
+    -- Get logged-in user's profile/dashboard details.
+    -- PasswordHash is not returned here.
     -- =====================================================
     IF (@Action = 'GET_USER_BY_ID')
     BEGIN
@@ -140,28 +164,38 @@ BEGIN
             U.PhoneNumber,
             U.DepartmentId,
             D.DepartmentName,
+            D.DepartmentCode,
             U.DesignationId,
             DG.DesignationName,
             DG.LevelNo,
             U.ReportingAuthorityId,
             RA.FullName AS ReportingAuthorityName
         FROM Users U
-        INNER JOIN Departments D 
+        INNER JOIN Departments D
             ON U.DepartmentId = D.DepartmentId
-        INNER JOIN Designations DG 
+        INNER JOIN Designations DG
             ON U.DesignationId = DG.DesignationId
-        LEFT JOIN Users RA 
+        LEFT JOIN Users RA
             ON U.ReportingAuthorityId = RA.UserId
         WHERE U.UserId = @UserId
-          AND U.IsActive = 1;
+          AND U.IsActive = 1
+          AND D.IsActive = 1
+          AND DG.IsActive = 1;
 
         RETURN;
-    END
+    END;
 
     -- =====================================================
     -- Action: GET_REPORTING_USERS
-    -- Purpose: Get users who directly report to logged-in user
-    -- Rule: Users.ReportingAuthorityId = LoggedInUserId
+    -- Purpose:
+    -- Get users directly working under logged-in user.
+    -- Rule:
+    -- Users.ReportingAuthorityId = LoggedInUserId
+    --
+    -- Example:
+    -- Level 2 sees direct Level 1 users.
+    -- Level 3 sees direct Level 2 users.
+    -- Level 4 sees direct Level 3 users.
     -- =====================================================
     IF (@Action = 'GET_REPORTING_USERS')
     BEGIN
@@ -181,9 +215,9 @@ BEGIN
             L.LunchDeductionMinutes,
             L.NetDurationMinutes
         FROM Users U
-        INNER JOIN Departments D 
+        INNER JOIN Departments D
             ON U.DepartmentId = D.DepartmentId
-        INNER JOIN Designations DG 
+        INNER JOIN Designations DG
             ON U.DesignationId = DG.DesignationId
         OUTER APPLY
         (
@@ -196,18 +230,26 @@ BEGIN
                 NetDurationMinutes
             FROM UserAttendanceLogs
             WHERE UserId = U.UserId
+              AND LoginStatus = 'Success'
             ORDER BY AttendanceLogId DESC
         ) L
         WHERE U.ReportingAuthorityId = @UserId
           AND U.IsActive = 1
+          AND D.IsActive = 1
+          AND DG.IsActive = 1
         ORDER BY DG.LevelNo, U.FullName;
 
         RETURN;
-    END
+    END;
 
     -- =====================================================
     -- Action: INSERT_LOGIN_LOG
-    -- Purpose: Insert login time when user logs in
+    -- Purpose:
+    -- Insert login attempt.
+    -- For successful login, UserId will have value.
+    -- For failed login, UserId can be NULL.
+    --
+    -- Return: AttendanceLogId
     -- =====================================================
     IF (@Action = 'INSERT_LOGIN_LOG')
     BEGIN
@@ -216,48 +258,74 @@ BEGIN
             UserId,
             Username,
             LoginTime,
+            LogoutTime,
+            TotalDurationMinutes,
+            LunchDeductionMinutes,
+            NetDurationMinutes,
             LoginIpAddress,
+            LogoutIpAddress,
             UserAgent,
             LoginStatus,
-            FailureReason
+            FailureReason,
+            CreatedOn
         )
         VALUES
         (
             @UserId,
             @Username,
             GETDATE(),
+            NULL,
+            NULL,
+            30,
+            NULL,
             @LoginIpAddress,
+            NULL,
             @UserAgent,
             @LoginStatus,
-            @FailureReason
+            @FailureReason,
+            GETDATE()
         );
 
-        SELECT SCOPE_IDENTITY() AS AttendanceLogId;
+        SELECT CAST(SCOPE_IDENTITY() AS BIGINT) AS AttendanceLogId;
         RETURN;
-    END
+    END;
 
     -- =====================================================
     -- Action: UPDATE_LOGOUT_LOG
-    -- Purpose: Update logout time and calculate duration
+    -- Purpose:
+    -- Update logout time and calculate total/net duration.
+    --
+    -- TotalDurationMinutes = LogoutTime - LoginTime
+    -- NetDurationMinutes = TotalDurationMinutes - 30 minutes lunch
+    --
+    -- Logout IP is not used for now.
     -- =====================================================
     IF (@Action = 'UPDATE_LOGOUT_LOG')
     BEGIN
         UPDATE UserAttendanceLogs
         SET
             LogoutTime = GETDATE(),
-            LogoutIpAddress = @LogoutIpAddress,
-            TotalDurationMinutes = DATEDIFF(MINUTE, LoginTime, GETDATE()),
-            NetDurationMinutes = 
-                CASE 
+
+            TotalDurationMinutes =
+                DATEDIFF(MINUTE, LoginTime, GETDATE()),
+
+            NetDurationMinutes =
+                CASE
                     WHEN DATEDIFF(MINUTE, LoginTime, GETDATE()) > LunchDeductionMinutes
                     THEN DATEDIFF(MINUTE, LoginTime, GETDATE()) - LunchDeductionMinutes
                     ELSE DATEDIFF(MINUTE, LoginTime, GETDATE())
                 END
-        WHERE AttendanceLogId = @AttendanceLogId;
+        WHERE AttendanceLogId = @AttendanceLogId
+          AND LogoutTime IS NULL;
 
-        SELECT 1 AS Result;
+        SELECT
+            CASE
+                WHEN @@ROWCOUNT > 0 THEN 1
+                ELSE 0
+            END AS Result;
+
         RETURN;
-    END
+    END;
 
     -- =====================================================
     -- Invalid Action
