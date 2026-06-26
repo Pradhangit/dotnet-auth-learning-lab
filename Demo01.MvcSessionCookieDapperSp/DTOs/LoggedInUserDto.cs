@@ -28,5 +28,6 @@
 
         public bool IsActive { get; set; }
         public bool IsAdmin { get; set; }
+        public long AttendanceLogId { get; set; }
     }
 }

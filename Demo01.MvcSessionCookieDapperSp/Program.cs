@@ -1,5 +1,7 @@
 using Demo01.MvcSessionCookieDapperSp.Repositories.Implementations;
 using Demo01.MvcSessionCookieDapperSp.Repositories.Interfaces;
+using Demo01.MvcSessionCookieDapperSp.Services.Implementations;
+using Demo01.MvcSessionCookieDapperSp.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +24,7 @@ builder.Services.AddSession(options =>
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-// builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 
