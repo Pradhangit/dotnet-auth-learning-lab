@@ -1,3 +1,6 @@
+using Demo01.MvcSessionCookieDapperSp.Repositories.Implementations;
+using Demo01.MvcSessionCookieDapperSp.Repositories.Interfaces;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -14,7 +17,7 @@ builder.Services.AddSession(options =>
 // Required to access HttpContext in services/helpers later
 builder.Services.AddHttpContextAccessor();
 
-// builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 // builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
