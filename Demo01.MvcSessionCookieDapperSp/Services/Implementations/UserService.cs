@@ -129,4 +129,20 @@ public class UserService : IUserService
             AttendanceLogId = attendanceLogId
         });
     }
+
+    public async Task<List<DepartmentDropdownDto>> GetDepartmentsAsync()
+    {
+        return await _userRepository.GetDepartmentsAsync();
+    }
+
+    public async Task<List<DesignationDropdownDto>> GetDesignationsByDepartmentAsync(int departmentId)
+    {
+        return await _userRepository.GetDesignationsByDepartmentAsync(departmentId);
+    }
+
+    public async Task<List<ReportingAuthorityDropdownDto>> GetReportingAuthoritiesAsync(int departmentId, int designationId
+    )
+    {
+        return await _userRepository.GetReportingAuthoritiesAsync(departmentId, designationId);
+    }
 }

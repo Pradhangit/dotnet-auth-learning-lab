@@ -1,6 +1,7 @@
 ﻿using Demo01.MvcSessionCookieDapperSp.Services.Interfaces;
 using Demo01.MvcSessionCookieDapperSp.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Demo01.MvcSessionCookieDapperSp.Controllers;
 
@@ -80,7 +81,7 @@ public class AccountController : Controller
     }
 
     [HttpGet]
-    public IActionResult Register()
+    public async Task<IActionResult> Register()
     {
         if (!IsLoggedIn())
         {
@@ -91,6 +92,8 @@ public class AccountController : Controller
         {
             return RedirectToAction("AccessDenied", "Home");
         }
+
+        await LoadDepartmentDropdownAsync();
 
         return View(new RegisterViewModel());
     }
@@ -111,6 +114,7 @@ public class AccountController : Controller
 
         if (!ModelState.IsValid)
         {
+            await LoadDepartmentDropdownAsync();
             return View(model);
         }
 
@@ -118,6 +122,7 @@ public class AccountController : Controller
 
         if (!result.Success)
         {
+            await LoadDepartmentDropdownAsync();
             ModelState.AddModelError(string.Empty, result.Message);
             return View(model);
         }
@@ -148,5 +153,33 @@ public class AccountController : Controller
     private bool IsAdmin()
     {
         return HttpContext.Session.GetString("IsAdmin") == "True";
+    }
+    [HttpGet]
+    public async Task<JsonResult> GetDesignationsByDepartment(int departmentId)
+    {
+        var designations = await _userService.GetDesignationsByDepartmentAsync(departmentId);
+
+        return Json(designations);
+    }
+
+    [HttpGet]
+    public async Task<JsonResult> GetReportingAuthorities(int departmentId, int designationId)
+    {
+        var reportingAuthorities = await _userService.GetReportingAuthoritiesAsync(
+            departmentId,
+            designationId
+        );
+
+        return Json(reportingAuthorities);
+    }
+    private async Task LoadDepartmentDropdownAsync()
+    {
+        var departments = await _userService.GetDepartmentsAsync();
+
+        ViewBag.Departments = new SelectList(
+            departments,
+            "DepartmentId",
+            "DepartmentName"
+        );
     }
 }

@@ -158,4 +158,57 @@ public class UserRepository : IUserRepository
 
         return result == 1;
     }
+    public async Task<List<DepartmentDropdownDto>> GetDepartmentsAsync()
+    {
+        using var connection = CreateConnection();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@Action", "GET_DEPARTMENTS");
+
+        var departments = await connection.QueryAsync<DepartmentDropdownDto>(
+            "sp_UserManagement5361",
+            parameters,
+            commandType: CommandType.StoredProcedure
+        );
+
+        return departments.ToList();
+    }
+
+    public async Task<List<DesignationDropdownDto>> GetDesignationsByDepartmentAsync(int departmentId)
+    {
+        using var connection = CreateConnection();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@Action", "GET_DESIGNATIONS_BY_DEPARTMENT");
+        parameters.Add("@DepartmentId", departmentId);
+
+        var designations = await connection.QueryAsync<DesignationDropdownDto>(
+            "sp_UserManagement5361",
+            parameters,
+            commandType: CommandType.StoredProcedure
+        );
+
+        return designations.ToList();
+    }
+
+    public async Task<List<ReportingAuthorityDropdownDto>> GetReportingAuthoritiesAsync(
+        int departmentId,
+        int designationId
+    )
+    {
+        using var connection = CreateConnection();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@Action", "GET_REPORTING_AUTHORITIES");
+        parameters.Add("@DepartmentId", departmentId);
+        parameters.Add("@DesignationId", designationId);
+
+        var reportingAuthorities = await connection.QueryAsync<ReportingAuthorityDropdownDto>(
+            "sp_UserManagement5361",
+            parameters,
+            commandType: CommandType.StoredProcedure
+        );
+
+        return reportingAuthorities.ToList();
+    }
 }

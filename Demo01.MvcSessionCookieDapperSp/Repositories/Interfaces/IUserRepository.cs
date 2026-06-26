@@ -18,5 +18,10 @@ namespace Demo01.MvcSessionCookieDapperSp.Repositories.Interfaces
         Task<long> InsertLoginLogAsync(LoginLogRequestDto request);
 
         Task<bool> UpdateLogoutLogAsync(LogoutLogRequestDto request);
+        Task<List<DepartmentDropdownDto>> GetDepartmentsAsync();
+
+        Task<List<DesignationDropdownDto>> GetDesignationsByDepartmentAsync(int departmentId);
+
+        Task<List<ReportingAuthorityDropdownDto>> GetReportingAuthoritiesAsync(int departmentId, int designationId);
     }
 }
