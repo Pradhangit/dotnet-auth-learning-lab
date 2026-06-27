@@ -1,0 +1,467 @@
+[33mcommit 5616d1904451b24ac851031eac6800b962ba3d60[m
+Author: pratyush.pradhan <pratyush.pradhan@csm.tech>
+Date:   Fri Jun 26 18:34:35 2026 +0530
+
+    Add IsAdmin to dashboard view model
+
+[1mdiff --git a/Demo01.MvcSessionCookieDapperSp/Controllers/AccountController.cs b/Demo01.MvcSessionCookieDapperSp/Controllers/AccountController.cs[m
+[1mnew file mode 100644[m
+[1mindex 0000000..26494c0[m
+[1m--- /dev/null[m
+[1m+++ b/Demo01.MvcSessionCookieDapperSp/Controllers/AccountController.cs[m
+[36m@@ -0,0 +1,152 @@[m
+[32m+[m[32m﻿using Demo01.MvcSessionCookieDapperSp.Services.Interfaces;[m
+[32m+[m[32musing Demo01.MvcSessionCookieDapperSp.ViewModels;[m
+[32m+[m[32musing Microsoft.AspNetCore.Mvc;[m
+[32m+[m
+[32m+[m[32mnamespace Demo01.MvcSessionCookieDapperSp.Controllers;[m
+[32m+[m
+[32m+[m[32mpublic class AccountController : Controller[m
+[32m+[m[32m{[m
+[32m+[m[32m    private readonly IUserService _userService;[m
+[32m+[m
+[32m+[m[32m    public AccountController(IUserService userService)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        _userService = userService;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    [HttpGet][m
+[32m+[m[32m    public IActionResult Login()[m
+[32m+[m[32m    {[m
+[32m+[m[32m        var username = Request.Cookies["RememberedUsername"];[m
+[32m+[m
+[32m+[m[32m        var model = new LoginViewModel[m
+[32m+[m[32m        {[m
+[32m+[m[32m            Username = username ?? string.Empty,[m
+[32m+[m[32m            RememberMe = !string.IsNullOrWhiteSpace(username)[m
+[32m+[m[32m        };[m
+[32m+[m
+[32m+[m[32m        return View(model);[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    [HttpPost][m
+[32m+[m[32m    [ValidateAntiForgeryToken][m
+[32m+[m[32m    public async Task<IActionResult> Login(LoginViewModel model)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        if (!ModelState.IsValid)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            return View(model);[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();[m
+[32m+[m[32m        var userAgent = Request.Headers.UserAgent.ToString();[m
+[32m+[m
+[32m+[m[32m        var user = await _userService.LoginAsync(model, ipAddress, userAgent);[m
+[32m+[m
+[32m+[m[32m        if (user == null)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            ModelState.AddModelError(string.Empty, "Invalid username or password.");[m
+[32m+[m[32m            return View(model);[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        HttpContext.Session.SetInt32("UserId", user.UserId);[m
+[32m+[m[32m        HttpContext.Session.SetString("FullName", user.FullName);[m
+[32m+[m[32m        HttpContext.Session.SetString("Username", user.Username);[m
+[32m+[m[32m        HttpContext.Session.SetInt32("DepartmentId", user.DepartmentId);[m
+[32m+[m[32m        HttpContext.Session.SetString("DepartmentName", user.DepartmentName);[m
+[32m+[m[32m        HttpContext.Session.SetInt32("DesignationId", user.DesignationId);[m
+[32m+[m[32m        HttpContext.Session.SetString("DesignationName", user.DesignationName);[m
+[32m+[m[32m        HttpContext.Session.SetInt32("LevelNo", user.LevelNo);[m
+[32m+[m[32m        HttpContext.Session.SetString("IsAdmin", user.IsAdmin.ToString());[m
+[32m+[m[32m        HttpContext.Session.SetString("AttendanceLogId", user.AttendanceLogId.ToString());[m
+[32m+[m
+[32m+[m[32m        if (model.RememberMe)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            Response.Cookies.Append([m
+[32m+[m[32m                "RememberedUsername",[m
+[32m+[m[32m                user.Username,[m
+[32m+[m[32m                new CookieOptions[m
+[32m+[m[32m                {[m
+[32m+[m[32m                    Expires = DateTimeOffset.Now.AddDays(7),[m
+[32m+[m[32m                    HttpOnly = true,[m
+[32m+[m[32m                    IsEssential = true[m
+[32m+[m[32m                }[m
+[32m+[m[32m            );[m
+[32m+[m[32m        }[m
+[32m+[m[32m        else[m
+[32m+[m[32m        {[m
+[32m+[m[32m            Response.Cookies.Delete("RememberedUsername");[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        return RedirectToAction("Index", "Dashboard");[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    [HttpGet][m
+[32m+[m[32m    public IActionResult Register()[m
+[32m+[m[32m    {[m
+[32m+[m[32m        if (!IsLoggedIn())[m
+[32m+[m[32m        {[m
+[32m+[m[32m            return RedirectToAction("Login", "Account");[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (!IsAdmin())[m
+[32m+[m[32m        {[m
+[32m+[m[32m            return RedirectToAction("AccessDenied", "Home");[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        return View(new RegisterViewModel());[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    [HttpPost][m
+[32m+[m[32m    [ValidateAntiForgeryToken][m
+[32m+[m[32m    public async Task<IActionResult> Register(RegisterViewModel model)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        if (!IsLoggedIn())[m
+[32m+[m[32m        {[m
+[32m+[m[32m            return RedirectToAction("Login", "Account");[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (!IsAdmin())[m
+[32m+[m[32m        {[m
+[32m+[m[32m            return RedirectToAction("AccessDenied", "Home");[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (!ModelState.IsValid)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            return View(model);[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        var result = await _userService.RegisterUserAsync(model);[m
+[32m+[m
+[32m+[m[32m        if (!result.Success)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            ModelState.AddModelError(string.Empty, result.Message);[m
+[32m+[m[32m            return View(model);[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        TempData["SuccessMessage"] = result.Message;[m
+[32m+[m[32m        return RedirectToAction("Register", "Account");[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    [HttpGet][m
+[32m+[m[32m    public async Task<IActionResult> Logout()[m
+[32m+[m[32m    {[m
+[32m+[m[32m        var attendanceLogIdText = HttpContext.Session.GetString("AttendanceLogId");[m
+[32m+[m
+[32m+[m[32m        if (long.TryParse(attendanceLogIdText, out var attendanceLogId))[m
+[32m+[m[32m        {[m
+[32m+[m[32m            await _userService.LogoutAsync(attendanceLogId);[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        HttpContext.Session.Clear();[m
+[32m+[m[32m        return RedirectToAction("Login", "Account");[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private bool IsLoggedIn()[m
+[32m+[m[32m    {[m
+[32m+[m[32m        return HttpContext.Session.GetInt32("UserId").HasValue;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private bool IsAdmin()[m
+[32m+[m[32m    {[m
+[32m+[m[32m        return HttpContext.Session.GetString("IsAdmin") == "True";[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/Demo01.MvcSessionCookieDapperSp/Controllers/DashboardController.cs b/Demo01.MvcSessionCookieDapperSp/Controllers/DashboardController.cs[m
+[1mnew file mode 100644[m
+[1mindex 0000000..10622cf[m
+[1m--- /dev/null[m
+[1m+++ b/Demo01.MvcSessionCookieDapperSp/Controllers/DashboardController.cs[m
+[36m@@ -0,0 +1,50 @@[m
+[32m+[m[32m﻿using Demo01.MvcSessionCookieDapperSp.Services.Interfaces;[m
+[32m+[m[32musing Microsoft.AspNetCore.Mvc;[m
+[32m+[m
+[32m+[m[32mnamespace Demo01.MvcSessionCookieDapperSp.Controllers;[m
+[32m+[m
+[32m+[m[32mpublic class DashboardController : Controller[m
+[32m+[m[32m{[m
+[32m+[m[32m    private readonly IUserService _userService;[m
+[32m+[m
+[32m+[m[32m    public DashboardController(IUserService userService)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        _userService = userService;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    [HttpGet][m
+[32m+[m[32m    public async Task<IActionResult> Index()[m
+[32m+[m[32m    {[m
+[32m+[m[32m        var userId = HttpContext.Session.GetInt32("UserId");[m
+[32m+[m
+[32m+[m[32m        if (!userId.HasValue)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            return RedirectToAction("Login", "Account");[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        var user = await _userService.GetUserByIdAsync(userId.Value);[m
+[32m+[m
+[32m+[m[32m        if (user == null)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            HttpContext.Session.Clear();[m
+[32m+[m[32m            return RedirectToAction("Login", "Account");[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        return View(user);[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    [HttpGet][m
+[32m+[m[32m    public async Task<IActionResult> ViewUsers()[m
+[32m+[m[32m    {[m
+[32m+[m[32m        var userId = HttpContext.Session.GetInt32("UserId");[m
+[32m+[m
+[32m+[m[32m        if (!userId.HasValue)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            return RedirectToAction("Login", "Account");[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        var users = await _userService.GetReportingUsersAsync(userId.Value);[m
+[32m+[m
+[32m+[m[32m        return View(users);[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/Demo01.MvcSessionCookieDapperSp/Controllers/HomeController.cs b/Demo01.MvcSessionCookieDapperSp/Controllers/HomeController.cs[m
+[1mindex c2938cb..20ef3ee 100644[m
+[1m--- a/Demo01.MvcSessionCookieDapperSp/Controllers/HomeController.cs[m
+[1m+++ b/Demo01.MvcSessionCookieDapperSp/Controllers/HomeController.cs[m
+[36m@@ -21,4 +21,8 @@[m [mpublic class HomeController : Controller[m
+     {[m
+         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });[m
+     }[m
+[32m+[m[32m    public IActionResult AccessDenied()[m
+[32m+[m[32m    {[m
+[32m+[m[32m        return View();[m
+[32m+[m[32m    }[m
+ }[m
+[1mdiff --git a/Demo01.MvcSessionCookieDapperSp/Program.cs b/Demo01.MvcSessionCookieDapperSp/Program.cs[m
+[1mindex 433fc84..18e4058 100644[m
+[1m--- a/Demo01.MvcSessionCookieDapperSp/Program.cs[m
+[1m+++ b/Demo01.MvcSessionCookieDapperSp/Program.cs[m
+[36m@@ -46,7 +46,7 @@[m [mapp.MapStaticAssets();[m
+ [m
+ app.MapControllerRoute([m
+     name: "default",[m
+[31m-    pattern: "{controller=Home}/{action=Index}/{id?}")[m
+[32m+[m[32m    pattern: "{controller=Account}/{action=Login}/{id?}")[m
+     .WithStaticAssets();[m
+ [m
+ [m
+[1mdiff --git a/Demo01.MvcSessionCookieDapperSp/ViewModels/DashboardViewModel.cs b/Demo01.MvcSessionCookieDapperSp/ViewModels/DashboardViewModel.cs[m
+[1mindex 868fd63..92519e8 100644[m
+[1m--- a/Demo01.MvcSessionCookieDapperSp/ViewModels/DashboardViewModel.cs[m
+[1m+++ b/Demo01.MvcSessionCookieDapperSp/ViewModels/DashboardViewModel.cs[m
+[36m@@ -17,5 +17,6 @@[m
+         public string DesignationName { get; set; } = string.Empty;[m
+ [m
+         public int LevelNo { get; set; }[m
+[32m+[m[32m        public bool IsAdmin { get; set; }[m
+     }[m
+ }[m
+[1mdiff --git a/Demo01.MvcSessionCookieDapperSp/Views/Account/Login.cshtml b/Demo01.MvcSessionCookieDapperSp/Views/Account/Login.cshtml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..2157820[m
+[1m--- /dev/null[m
+[1m+++ b/Demo01.MvcSessionCookieDapperSp/Views/Account/Login.cshtml[m
+[36m@@ -0,0 +1,36 @@[m
+[32m+[m[32m﻿@model Demo01.MvcSessionCookieDapperSp.ViewModels.LoginViewModel[m
+[32m+[m
+[32m+[m[32m@{[m
+[32m+[m[32m    ViewData["Title"] = "Login";[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m<h2>Login</h2>[m
+[32m+[m
+[32m+[m[32m<form asp-action="Login" asp-controller="Account" method="post">[m
+[32m+[m[32m    @Html.AntiForgeryToken()[m
+[32m+[m
+[32m+[m[32m    <div asp-validation-summary="ModelOnly" class="text-danger"></div>[m
+[32m+[m
+[32m+[m[32m    <div class="mb-3">[m
+[32m+[m[32m        <label asp-for="Username" class="form-label"></label>[m
+[32m+[m[32m        <input asp-for="Username" class="form-control" />[m
+[32m+[m[32m        <span asp-validation-for="Username" class="text-danger"></span>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <div class="mb-3">[m
+[32m+[m[32m        <label asp-for="Password" class="form-label"></label>[m
+[32m+[m[32m        <input asp-for="Password" class="form-control" />[m
+[32m+[m[32m        <span asp-validation-for="Password" class="text-danger"></span>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <div class="mb-3 form-check">[m
+[32m+[m[32m        <input asp-for="RememberMe" class="form-check-input" />[m
+[32m+[m[32m        <label asp-for="RememberMe" class="form-check-label"></label>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <button type="submit" class="btn btn-primary">Login</button>[m
+[32m+[m[32m</form>[m
+[32m+[m
+[32m+[m[32m@section Scripts {[m
+[32m+[m[32m    <partial name="_ValidationScriptsPartial" />[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/Demo01.MvcSessionCookieDapperSp/Views/Account/Register.cshtml b/Demo01.MvcSessionCookieDapperSp/Views/Account/Register.cshtml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..eec25c7[m
+[1m--- /dev/null[m
+[1m+++ b/Demo01.MvcSessionCookieDapperSp/Views/Account/Register.cshtml[m
+[36m@@ -0,0 +1,85 @@[m
+[32m+[m[32m﻿@model Demo01.MvcSessionCookieDapperSp.ViewModels.RegisterViewModel[m
+[32m+[m
+[32m+[m[32m@{[m
+[32m+[m[32m    ViewData["Title"] = "Register User";[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m<h2>Register User</h2>[m
+[32m+[m
+[32m+[m[32m@if (TempData["SuccessMessage"] != null)[m
+[32m+[m[32m{[m
+[32m+[m[32m    <div class="alert alert-success">[m
+[32m+[m[32m        @TempData["SuccessMessage"][m
+[32m+[m[32m    </div>[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m<form asp-action="Register" asp-controller="Account" method="post">[m
+[32m+[m[32m    @Html.AntiForgeryToken()[m
+[32m+[m
+[32m+[m[32m    <div asp-validation-summary="ModelOnly" class="text-danger"></div>[m
+[32m+[m
+[32m+[m[32m    <div class="mb-3">[m
+[32m+[m[32m        <label asp-for="FullName" class="form-label"></label>[m
+[32m+[m[32m        <input asp-for="FullName" class="form-control" />[m
+[32m+[m[32m        <span asp-validation-for="FullName" class="text-danger"></span>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <div class="mb-3">[m
+[32m+[m[32m        <label asp-for="Username" class="form-label"></label>[m
+[32m+[m[32m        <input asp-for="Username" class="form-control" />[m
+[32m+[m[32m        <span asp-validation-for="Username" class="text-danger"></span>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <div class="mb-3">[m
+[32m+[m[32m        <label asp-for="DepartmentId" class="form-label"></label>[m
+[32m+[m[32m        <input asp-for="DepartmentId" class="form-control" />[m
+[32m+[m[32m        <span asp-validation-for="DepartmentId" class="text-danger"></span>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <div class="mb-3">[m
+[32m+[m[32m        <label asp-for="DesignationId" class="form-label"></label>[m
+[32m+[m[32m        <input asp-for="DesignationId" class="form-control" />[m
+[32m+[m[32m        <span asp-validation-for="DesignationId" class="text-danger"></span>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <div class="mb-3">[m
+[32m+[m[32m        <label asp-for="ReportingAuthorityId" class="form-label"></label>[m
+[32m+[m[32m        <input asp-for="ReportingAuthorityId" class="form-control" />[m
+[32m+[m[32m        <span asp-validation-for="ReportingAuthorityId" class="text-danger"></span>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <div class="mb-3">[m
+[32m+[m[32m        <label asp-for="Email" class="form-label"></label>[m
+[32m+[m[32m        <input asp-for="Email" class="form-control" />[m
+[32m+[m[32m        <span asp-validation-for="Email" class="text-danger"></span>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <div class="mb-3">[m
+[32m+[m[32m        <label asp-for="PhoneNumber" class="form-label"></label>[m
+[32m+[m[32m        <input asp-for="PhoneNumber" class="form-control" />[m
+[32m+[m[32m        <span asp-validation-for="PhoneNumber" class="text-danger"></span>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <div class="mb-3 form-check">[m
+[32m+[m[32m        <input asp-for="IsAdmin" class="form-check-input" />[m
+[32m+[m[32m        <label asp-for="IsAdmin" class="form-check-label">Make this user Admin</label>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <div class="mb-3">[m
+[32m+[m[32m        <label asp-for="Password" class="form-label"></label>[m
+[32m+[m[32m        <input asp-for="Password" class="form-control" />[m
+[32m+[m[32m        <span asp-validation-for="Password" class="text-danger"></span>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <div class="mb-3">[m
+[32m+[m[32m        <label asp-for="ConfirmPassword" class="form-label"></label>[m
+[32m+[m[32m        <input asp-for="ConfirmPassword" class="form-control" />[m
+[32m+[m[32m        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <button type="submit" class="btn btn-primary">Create User</button>[m
+[32m+[m[32m</form>[m
+[32m+[m
+[32m+[m[32m@section Scripts {[m
+[32m+[m[32m    <partial name="_ValidationScriptsPartial" />[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/Demo01.MvcSessionCookieDapperSp/Views/Dashboard/Index.cshtml b/Demo01.MvcSessionCookieDapperSp/Views/Dashboard/Index.cshtml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..518082b[m
+[1m--- /dev/null[m
+[1m+++ b/Demo01.MvcSessionCookieDapperSp/Views/Dashboard/Index.cshtml[m
+[36m@@ -0,0 +1,68 @@[m
+[32m+[m[32m﻿@model Demo01.MvcSessionCookieDapperSp.ViewModels.DashboardViewModel[m
+[32m+[m
+[32m+[m[32m@{[m
+[32m+[m[32m    ViewData["Title"] = "Dashboard";[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m<h2>Dashboard</h2>[m
+[32m+[m
+[32m+[m[32m<p>Welcome, <strong>@Model.FullName</strong></p>[m
+[32m+[m
+[32m+[m[32m<table class="table table-bordered">[m
+[32m+[m[32m    <tr>[m
+[32m+[m[32m        <th>Username</th>[m
+[32m+[m[32m        <td>@Model.Username</td>[m
+[32m+[m[32m    </tr>[m
+[32m+[m[32m    <tr>[m
+[32m+[m[32m        <th>Department</th>[m
+[32m+[m[32m        <td>@Model.DepartmentName</td>[m
+[32m+[m[32m    </tr>[m
+[32m+[m[32m    <tr>[m
+[32m+[m[32m        <th>Designation</th>[m
+[32m+[m[32m        <td>@Model.DesignationName</td>[m
+[32m+[m[32m    </tr>[m
+[32m+[m[32m    <tr>[m
+[32m+[m[32m        <th>Level</th>[m
+[32m+[m[32m        <td>@Model.LevelNo</td>[m
+[32m+[m[32m    </tr>[m
+[32m+[m[32m    <tr>[m
+[32m+[m[32m        <th>Admin</th>[m
+[32m+[m[32m        <td>@Model.IsAdmin</td>[m
+[32m+[m[32m    </tr>[m
+[32m+[m[32m</table>[m
+[32m+[m
+[32m+[m[32m<hr />[m
+[32m+[m
+[32m+[m[32m<h4>Menu</h4>[m
+[32m+[m
+[32m+[m[32m<ul>[m
+[32m+[m[32m    <li>[m
+[32m+[m[32m        <a asp-controller="Dashboard" asp-action="Index">View Details / Personal Profile</a>[m
+[32m+[m[32m    </li>[m
+[32m+[m
+[32m+[m[32m    <li>[m
+[32m+[m[32m        <a href="#">Apply Leave</a>[m
+[32m+[m[32m    </li>[m
+[32m+[m
+[32m+[m[32m    @if (Model.LevelNo >= 2)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        <li>[m
+[32m+[m[32m            <a href="#">Approve Leave</a>[m
+[32m+[m[32m        </li>[m
+[32m+[m
+[32m+[m[32m        <li>[m
+[32m+[m[32m            <a asp-controller="Dashboard" asp-action="ViewUsers">View Users</a>[m
+[32m+[m[32m        </li>[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    @if (Model.IsAdmin)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        <li>[m
+[32m+[m[32m            <a asp-controller="Account" asp-action="Register">Register User</a>[m
+[32m+[m[32m        </li>[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    <li>[m
+[32m+[m[32m        <a asp-controller="Account" asp-action="Logout">Logout</a>[m
+[32m+[m[32m    </

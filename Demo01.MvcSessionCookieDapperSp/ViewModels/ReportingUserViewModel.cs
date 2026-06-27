@@ -27,5 +27,8 @@
         public int LunchDeductionMinutes { get; set; }
 
         public int? NetDurationMinutes { get; set; }
+        public DateTime? CurrentActiveLoginTime { get; set; }
+
+        public bool IsCurrentlyLoggedIn { get; set; }
     }
 }

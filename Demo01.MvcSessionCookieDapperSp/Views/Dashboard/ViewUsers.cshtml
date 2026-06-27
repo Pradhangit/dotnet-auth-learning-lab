@@ -30,6 +30,8 @@ else
                 <th>Logout Time</th>
                 <th>Total Minutes</th>
                 <th>Net Minutes</th>
+                <th>Status</th>
+                <th>Current Login</th>
             </tr>
         </thead>
         <tbody>
@@ -47,6 +49,18 @@ else
                     <td>@user.LogoutTime</td>
                     <td>@user.TotalDurationMinutes</td>
                     <td>@user.NetDurationMinutes</td>
+                    <td>
+                        @if (user.IsCurrentlyLoggedIn)
+                        {
+                            <span class="badge bg-success">Logged In</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Logged Out</span>
+                        }
+                    </td>
+
+                    <td>@user.CurrentActiveLoginTime</td>
                 </tr>
             }
         </tbody>
