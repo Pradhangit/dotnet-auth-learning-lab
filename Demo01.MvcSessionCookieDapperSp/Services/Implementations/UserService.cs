@@ -117,11 +117,10 @@ public class UserService : IUserService
         return await _userRepository.GetUserByIdAsync(userId);
     }
 
-    public async Task<List<ReportingUserViewModel>> GetReportingUsersAsync(int loggedInUserId)
+    public async Task<List<ReportingUserViewModel>> GetReportingUsersAsync(int loggedInUserId, DateTime attendanceDate)
     {
-        return await _userRepository.GetReportingUsersAsync(loggedInUserId);
+        return await _userRepository.GetReportingUsersAsync(loggedInUserId, attendanceDate);
     }
-
     public async Task<bool> LogoutAsync(long attendanceLogId)
     {
         return await _userRepository.UpdateLogoutLogAsync(new LogoutLogRequestDto

@@ -12,7 +12,7 @@ public interface IUserService
 
     Task<DashboardViewModel?> GetUserByIdAsync(int userId);
 
-    Task<List<ReportingUserViewModel>> GetReportingUsersAsync(int loggedInUserId);
+    Task<List<ReportingUserViewModel>> GetReportingUsersAsync(int loggedInUserId, DateTime attendanceDate);
 
     Task<bool> LogoutAsync(long attendanceLogId);
 

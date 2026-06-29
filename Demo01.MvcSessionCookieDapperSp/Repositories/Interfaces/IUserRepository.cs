@@ -13,7 +13,7 @@ namespace Demo01.MvcSessionCookieDapperSp.Repositories.Interfaces
 
         Task<DashboardViewModel?> GetUserByIdAsync(int userId);
 
-        Task<List<ReportingUserViewModel>> GetReportingUsersAsync(int loggedInUserId);
+        Task<List<ReportingUserViewModel>> GetReportingUsersAsync(int loggedInUserId, DateTime attendanceDate);
 
         Task<long> InsertLoginLogAsync(LoginLogRequestDto request);
 

@@ -103,13 +103,14 @@ public class UserRepository : IUserRepository
         return user;
     }
 
-    public async Task<List<ReportingUserViewModel>> GetReportingUsersAsync(int loggedInUserId)
+    public async Task<List<ReportingUserViewModel>> GetReportingUsersAsync(int loggedInUserId, DateTime attendanceDate)
     {
         using var connection = CreateConnection();
 
         var parameters = new DynamicParameters();
         parameters.Add("@Action", "GET_REPORTING_USERS");
         parameters.Add("@UserId", loggedInUserId);
+        parameters.Add("@AttendanceDate", attendanceDate.Date);
 
         var users = await connection.QueryAsync<ReportingUserViewModel>(
             "sp_UserManagement5361",

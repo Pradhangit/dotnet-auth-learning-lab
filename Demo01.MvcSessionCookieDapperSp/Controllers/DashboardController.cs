@@ -34,7 +34,7 @@ public class DashboardController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> ViewUsers()
+    public async Task<IActionResult> ViewUsers(DateTime? attendanceDate)
     {
         var userId = HttpContext.Session.GetInt32("UserId");
 
@@ -43,7 +43,14 @@ public class DashboardController : Controller
             return RedirectToAction("Login", "Account");
         }
 
-        var users = await _userService.GetReportingUsersAsync(userId.Value);
+        var selectedDate = attendanceDate ?? DateTime.Today;
+
+        ViewBag.AttendanceDate = selectedDate.ToString("yyyy-MM-dd");
+
+        var users = await _userService.GetReportingUsersAsync(
+            userId.Value,
+            selectedDate
+        );
 
         return View(users);
     }

@@ -16,6 +16,23 @@
 }
 else
 {
+    <form asp-controller="Dashboard" asp-action="ViewUsers" method="get" class="mb-3">
+        <div class="row">
+            <div class="col-md-4">
+                <label class="form-label">Attendance Date</label>
+                <input type="date"
+                       name="attendanceDate"
+                       value="@ViewBag.AttendanceDate"
+                       class="form-control" />
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">
+                    Search
+                </button>
+            </div>
+        </div>
+    </form>
     <table class="table table-bordered table-striped mt-3">
         <thead>
             <tr>
