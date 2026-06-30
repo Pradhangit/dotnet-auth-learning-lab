@@ -192,10 +192,7 @@ public class UserRepository : IUserRepository
         return designations.ToList();
     }
 
-    public async Task<List<ReportingAuthorityDropdownDto>> GetReportingAuthoritiesAsync(
-        int departmentId,
-        int designationId
-    )
+    public async Task<List<ReportingAuthorityDropdownDto>> GetReportingAuthoritiesAsync(int departmentId, int designationId)
     {
         using var connection = CreateConnection();
 
@@ -211,5 +208,22 @@ public class UserRepository : IUserRepository
         );
 
         return reportingAuthorities.ToList();
+    }
+
+    public async Task<DesignationDetailsDto?> GetDesignationByIdAsync(int designationId)
+    {
+        using var connection = CreateConnection();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@Action", "GET_DESIGNATION_BY_ID");
+        parameters.Add("@DesignationId", designationId);
+
+        var designation = await connection.QueryFirstOrDefaultAsync<DesignationDetailsDto>(
+            "sp_UserManagement5361",
+            parameters,
+            commandType: CommandType.StoredProcedure
+        );
+
+        return designation;
     }
 }

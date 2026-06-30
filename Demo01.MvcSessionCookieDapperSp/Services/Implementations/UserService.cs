@@ -27,6 +27,31 @@ public class UserService : IUserService
             };
         }
 
+        var designation = await _userRepository.GetDesignationByIdAsync(model.DesignationId);
+
+        if (designation == null)
+        {
+            return new OperationResultDto
+            {
+                Success = false,
+                Message = "Invalid designation selected."
+            };
+        }
+
+        if (designation.LevelNo < 4 && model.ReportingAuthorityId == null)
+        {
+            return new OperationResultDto
+            {
+                Success = false,
+                Message = "Reporting authority is required for this designation."
+            };
+        }
+
+        if (designation.LevelNo == 4)
+        {
+            model.ReportingAuthorityId = null;
+        }
+
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
 
         var result = await _userRepository.RegisterUserAsync(model, passwordHash);

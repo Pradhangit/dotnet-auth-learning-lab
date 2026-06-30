@@ -23,5 +23,6 @@ namespace Demo01.MvcSessionCookieDapperSp.Repositories.Interfaces
         Task<List<DesignationDropdownDto>> GetDesignationsByDepartmentAsync(int departmentId);
 
         Task<List<ReportingAuthorityDropdownDto>> GetReportingAuthoritiesAsync(int departmentId, int designationId);
+        Task<DesignationDetailsDto?> GetDesignationByIdAsync(int designationId);
     }
 }
